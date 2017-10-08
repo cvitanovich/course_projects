@@ -119,35 +119,6 @@ def countCheckBrackets(s):
 # FUNCTION isWellFormed: CHECK IF STRING IS WELL FORMED
 # check if the string is well formed
 # recursive function (calls isWellFormed recursively to check if substrings are well formed)
-def isWellFormedOld(s):
-	# base case (empty stack) returns True (well formed)
-	if(s.is_empty()):
-		return True
-	# otherwise check if first two brackets match
-	top = s.pop()
-	next = s.pop()
-	# if top and next are a pair of brackets without a substring recurse on remaining stack
-	if(isGoodPair(next,top)):
-		# recurse on remaining stack with good pair removed (substring)
-		return isWellFormed(s)
-	# else remove outer brackets and recurse on remaining substring
-	else:
-		tempStack = stack() # create a new stack to push substring onto
-		tempStack.push(next) # last popped element is part of substring 
-		while(not s.is_empty()):
-			tempStack.push(s.pop())
-		# check if outer brackets are well formed
-		# if they are well formed recurse on remaining substring
-		last = tempStack.pop()
-		if(isGoodPair(last,top)):
-			# transfer back to original stack (to get order back)
-			while(not tempStack.is_empty()):
-				s.push(tempStack.pop())
-			# recurse on substring
-			return isWellFormed(s)
-		else:
-			# brackets do not match so the string is not well formed
-			return False
 
 def isWellFormed(s):
 	# temporary storage stack
