@@ -1,0 +1,6 @@
+Software Development:
+
+Puzzle Piece
+1) Shape (interface)
+2) Picture (functionality)
+- "In reality, probably ~2% of actual work"
