@@ -1,0 +1,110 @@
+Andrew Cvitanovich
+Non-coding solutions below
+
+#1
+
+part (a) The original function fails for negative numbers because it
+does not perform proper sign extension for negative numbers. Left shift
+word so that desired byte occupies most significant bits of the word.
+Then, cast as an int and right shift 3 bytes. Sign extension should then
+occur correctly.
+
+
+#2
+
+part (a) The Original function copy_int is buggy because sizeof(val) has
+unsigned return type. So, the >= comparison is always true (a
+tautology). by casting the result of sizeof as an int we can avoid this
+error.
+
+#4 If the sign bit is negative then take the complement, add one and negate.
+
+a) n = 0x0000000F, ANSWER: decimal(n) = 15
+
+b) n = 0xFFFFFCE6, ANSWER: decimal(n) = -794
+steps: ~n = 0x319, ~n+1 = 794, -1*(~n+1) = -794
+
+c) n = 0xFFFFFFFF, ANSWER: decimal(n) = -1
+steps: ~n = 0x0, ~n+1 = 0x1, -1*(~n+1) = -1
+
+#5 
+
+a) ANSWER: decimal(n) = +0
+
+steps:
+n = 0x00000000
+sign bit = 0
+BIAS = 2^(8-1)-1 = 127
+exp = 0 - 127 = -127
+significand = 0
+n = +1 * 0 ^ -127 = +0
+
+b) ANSWER: decimal(n) = 9.125
+
+steps:
+n = 0x41120000
+sign bit = 0
+E = 1000 0010 = 2^7 + 2^1 = 128 + 2 = 130
+M = 0010 0100 0000 ... 0000 = 2^-3 + 2^-6 = 1/8 + 1/64 = 9/64
+significand = 1 + M = 73/64 = 1.140625
+BIAS = 127
+exp = E - BIAS = 130 - 127 = 3
+n = +1 * 9/64 * 2^3 = 1.140625 * 8 = 9.125
+
+c) ANSWER: decimal(n) = -314
+steps:
+n = 0xC39D0000
+sign bit = 1 (negative)
+E = 1000 0111 = 2^7 + 2^2 + 2^1 + 2^0 = 128 + 7 = 135
+M = 0011 1010 0000 ... 0000 = 2^-3 + 2^-4 + 2^-5 + 2^-7 = 0.2265625
+significand = 1 + M = 1.2265625
+BIAS = 127
+exp = E - BIAS = 135 - 127 = 8
+n = -1 * 1.2265625 * 2^8 = -314
+
+#6
+
+a) ANSWER: float(n) = 0xBF800000
+
+steps:
+n = -1.0
+sign bit = 1 (negative)
+significand = 1.0
+exp = 0
+E = exp + BIAS = 0 + 127 = 127
+hex(E) = 0x7F
+binary(E) = 0111 1111
+M = significand - 1 = 0
+float(n) = 1011 1111 1000 0000 ... 0000
+hex(float(n)) = 0xBF800000
+
+b) ANSWER: float(n) = 0x41280000
+
+steps:
+n = 10.5
+sign bit = 0
+significand = 10.5/2^3 = 1.3125
+M = significand - 1 = 0.3125 = 1/16 + 1/4 = 2^-2 + 2^-4
+binary(M) = 0101 0000 ... 0000
+exp = 3
+E = exp + BIAS = 3 + 127 = 130
+hex(E) = 0x82
+binary(E) = 1000 0010
+binary(float(n)) = 0100 0001 0010 1000 0000 ... 0000
+hex(float(n)) = 0x41280000
+
+c) ANSWER: float(n) = 0xC2AA4000
+
+steps:
+n = -85.125
+sign bit = 1
+significand = 85.125/2^6 = 1.330078125
+M = significand - 1 = 0.330078125 = 1/4+1/16+1/64+1/512
+M = 2^-2 + 2^-4 + 2^-6 + 2^-9
+binary(M) = 0101 0100 1000 0000 ... 0000
+exp = 6
+E = exp + BIAS = 6 + 127 = 133
+binary(E) = 1000 0101
+hex(E) = 0x85
+binary(float(n)) = 1100 0010 1010 1010 0100 ... 0000
+hex(float(n)) = 0xC2AA4000
