@@ -15,7 +15,7 @@ int * readArray(int length) {
 	printf("Enter the %d elements of the array:\n",length);
 	while(i < length) {
 		/* get array data */
-		printf("Element %d? ", length);
+		printf("Element %d? ", i);
 		scanf("%d", array + i); /* store inputed data into array indexed by i */
 		i++;	
 	}
