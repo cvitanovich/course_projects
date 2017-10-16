@@ -1,4 +1,8 @@
 # Problem 2.3 Restaurant
+# NOTE: The restaurant search is done on a queue 
+# by the function findGoodStartLinearTime()
+# I left in other functions that aren't used anymore
+# as a reference to compare performance. 
 
 # Node Class
 class node(object):
@@ -114,8 +118,44 @@ def try2hop(q,start):
 	# failure: ran out of energy before completing restaurant cycle
 	return False
 
+# Find first good starting point (improved version?)
+# Runs in O(n) time
+def findGoodStartLinearTime(q,n):
+	dist = 0 # variable for distance traveled along loop
+	energy = 0 # energy remaining
+	attempts = 0 # flag for number of starting attempts
+	pos = -1 # starting position
+	# loop through the queue until we find a starting point that works
+	# (energy never reaches zero for a full circuit)
+	# if a full circuit is not achieved, set the starting point
+	# to the restaurant following the halting point
+	# since a premature halt means that intermediary restaurants
+	# won't make good starting points either.
+	while(attempts < n):
+		attempts += 1
+		# dequeue first restaurant element and update energy
+		pos += 1
+		start = pos # start is current position
+		temp = q.dequeue()
+		q.enqueue(temp) # put this restaurant at end of queue
+		energy = temp[0] - temp[1]
+		# try to cycle through loop without running out of energy
+		while energy > 0 and dist < n-1:
+			dist += 1 # increment distance traveled
+			pos += 1 # increment position
+			temp = q.dequeue()
+			q.enqueue(temp)
+			energy = energy + temp[0] - temp[1]
+		if(dist < n-1):
+			dist = 0 # reset distance traveled
+			# next iteration of outer loop starts with the next unvisited restaurant
+		else:
+			return start # return starting position that works
+	return -1 # nothing worked	
+
 # Find the first restaurant that is a good starting point
-def findGoodStart(q,n):
+# Runs in O(n^2) time
+def findGoodStartQuadraticTime(q,n):
 	for start in range(0,n):
 		result = try2hop(q,start)
 		if(result):
@@ -133,7 +173,7 @@ for line in fileinput.input():
 # Print a good starting point
 import time
 t0 = time.time()
-x = findGoodStart(myQueue,numRestaurants)
+x = findGoodStartLinearTime(myQueue,numRestaurants)
 t1 = time.time()
 total = t1 - t0
 print x
