@@ -1,0 +1,107 @@
+Andrew Cvitanovich
+Solutions to Assignment 4
+CIS 314
+
+1.)
+
+part (a)
+
+# ANNOTATED ASSEMBLY
+movl 8(%ebp), %esi # Get x
+movl 12(%ebp), %ebx # Get n
+movl $-1, %edi # result = -1movl $1, %edx # mask = 1.L2: # branch point labeled “L2” 
+movl %edx, %eax # copy mask to %eaxandl %esi, %eax # %eax = mask AND xxorl %eax, %edi # result = result XOR %eaxmovl %ebx, %ecx # copy n to %ecxshll %ecx, %edx # left shift mask by ncmpl $0, %edx # compare mask with 0jne .L2 # jump to “L2” if mask not equal to zeromovl %edi, %eax # move result to return register %eax
+
+part (b)
+
+/* x at %ebp + 8, n at %ebp + 12 */
+int loop(int x, int n) {
+  int result = -1;
+  for(int mask = 1; mask != 0; mask <= n) {
+    result ^= x & mask;
+  }
+    return result;
+}
+
+2.)
+
+part (A)
+
+# NOTE: I USE VARIABLES upper AND lower IN MY C CODE
+# THESE VARIABLES ARE JUST A HANDY SHORTHAND FOR MATRIX COORDINATES
+# upper POINTS TO DATA ABOVE THE MATRIX DIAGONAL
+# lower POINTS TO DATA BELOW THE MATRIX DIAGONAL
+# SINCE WE ARE TRANSPOSING VALUES BETWEEN UPPER AND LOWER DIAGONAL
+# THIS IS A NATURAL NAMING SCHEME
+# THESE VARIABLES ARE EXPLAINED IN TERMS OF A,i,j and M BELOW
+
+# REGISTER %ebx POINTS TO upper, WHICH IS &A[0][0] + i
+# REGISTER %edx HOLDS THE TEMPORARY VARIABLE NAMED “t” IN MY C CODE
+# REGISTER %esi HOLDS A[0][0] + i*M (CALLED “lower” IN MY C CODE)
+# REGISTER %ecx HOLDS LOOP VARIABLE NAMED “j” IN C CODE
+ 
+.L3: movl (%ebx), %eax # COPY *upper TO %eax
+movl (%esi,%ecx,4), %edx # SET t EQUAL TO *(lower + j)
+movl %eax, (%esi,%ecx,4) # *(lower + j) EQUAL TO %eax
+addl $1, %ecx # j++movl %edx, (%ebx) # *upper = t
+addl $52, %ebx # upper += M
+cmpl %edi, %ecx # j - i
+jl .L3 # CONDITIONAL JUMP TO L3
+
+part (B) What is the value of M? ANSWER: M is equal to 52 (The dimension of the square matrix)
+
+part (C) See code in source file 4-2.c
+
+3.)
+
+My Observations on caller/callee saving: Registers %edi and %esi are callee saved by function g() but %ebx is not saved — probably because it is never used. Function f() does not appear to perform any callee saves since it never performs any operations on registers %ebx, %esi or %edi.
+
+
+# COMPILED TO ASSEMBLY ON 2.2 GHz Intel Core i7 Macbook Pro RUNNING OS X 10.12.6 “SIERRA”
+
+	.section	__TEXT,__text,regular,pure_instructions
+	.macosx_version_min 10, 12
+	.globl	_f
+	.p2align	4, 0x90
+
+# ASSEMBLY INSTRUCTIONS FOR FUNCTION f()
+# x AT %ebp + 8
+
+_f:                                     ## @f
+## BB#0:
+	pushl	%ebp # SAVE OLD FRAME POINTER
+	movl	%esp, %ebp # CREATE A NEW FRAME POINTER
+	imull	$3, 8(%ebp), %eax # SET 3*X AS RETURN VALUE
+	popl	%ebp # RESTORE FRAME POINTER
+	retl	# RETURN
+
+	.globl	_g
+	.p2align	4, 0x90
+
+# ASSEMBLY INSTRUCTIONS FOR FUNCTION g()
+# a AT %ebp + 12, b AT %ebp + 8
+
+_g:                                     ## @g
+## BB#0:
+	pushl	%ebp # SAVE OLD FRAME POINTER
+	movl	%esp, %ebp # SET %ebp AS NEW FRAME POINTER
+	pushl	%edi # PUSH CONTENTS OF %edi ONTO STACK (CALLEE SAVE)
+	pushl	%esi # PUSH CONTENTS OF %esi ONTO STACK (CALLEE SAVE)
+
+	# NOTE: %ebx IS NOT CALLEE SAVED. NEVER USED
+
+	subl	$16, %esp # ALLOCATE 16 BYTES ON THE STACK
+	movl	12(%ebp), %edi # STORE VARIABLE “a” IN REGISTER %edi
+	movl	8(%ebp), %eax # STORE VARIABLE “b” IN REGISTER %eax
+	movl	%eax, (%esp) # STORE %eax ON STACK (SAVES “b”)
+	calll	_f # CALL FUNCTION “f” WITH ARGUMENT “b”
+	movl	%eax, %esi # STORE RESULT OF f(b) IN REGISTER %esi
+	movl	%edi, (%esp) # STORE %edi ON STACK (SAVES “a”)
+	calll	_f # CALL FUNCTION “f” WITH ARGUMENT “a”
+	addl	%esi, %eax # ADD f(a) TO f(b)
+	addl	$16, %esp # DEALLOCATE STACK SPACE
+	popl	%esi # RESTORE CONTENTS OF %esi (CALLEE SAVED DATA)
+	popl	%edi # RESTORE CONTENTS OF %edi (CALLEE SAVED DATA)
+	popl	%ebp # RESTORE OLD FRAME POINTER
+	retl	# RETURN
+.subsections_via_symbols
