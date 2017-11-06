@@ -1,3 +1,5 @@
+import time
+
 # Array for integer values
 valArray = []
 
@@ -22,9 +24,8 @@ def heapPeek(h):
 		return float('inf')
 
 def printMedian(m):
-	x=0#print ("%.1f" % m).replace(".0", "")
+	print ("%.1f" % m).replace(".0", "")
 
-nLines = int(sys.argv[2])
 # lowerHeap is a maxheap for lower half of data
 # upperHeap is a minheap for upper half of data
 for i in range(0,nLines):
@@ -64,3 +65,4 @@ for i in range(0,nLines):
 	else:
 		median = -1 * heapPeek(lowerHeap)
 		printMedian(median)
+

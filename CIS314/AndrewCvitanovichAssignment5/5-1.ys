@@ -1,0 +1,103 @@
+# This is kind of long because I added a test to check if x and y are swapped
+# The test is part of the main routine
+# Tested on the Y86 Simulator
+
+    .pos 0
+Init:
+    irmovl Stack, %ebp # Set up base pointer
+    irmovl Stack, %esp # Set up stack pointer
+    call Main
+    halt
+
+# Align 4 byte ints
+    .align 4
+
+# Test Values for xp and yp
+oldX:
+    .long 0xf00d
+oldY:
+    .long 0xd00d
+
+# xp and yp
+x:
+    .long 0xf00d
+y:
+    .long 0xd00d
+
+# test flags
+p:
+    .long 0x1
+f:
+    .long 0x0
+
+# Main calls Swap and then runs tests to check for success
+Main:
+    # Setup Main
+    pushl %ebp
+    rrmovl %esp,%ebp
+    
+    # Push Test Values for xp and yp
+    irmovl x,%eax
+    irmovl y,%ebx
+    pushl %ebx              # push yp
+    pushl %eax              # push xp
+    
+    # Call Swap Subroutine
+    call Swap
+    
+    # Test if xp and yp were swapped
+    # %eax will contain 0x1 if tests pass
+    # or 0x0 if tests fail
+    
+    # Compare oldX and y and jump to Fail if not equal
+    irmovl oldX,%eax
+    mrmovl (%eax),%ecx
+    irmovl y,%eax
+    mrmovl (%eax),%edx
+    xorl %ecx,%edx
+    jne Fail
+    
+    # Compare oldY and x and jump to Fail if not equal
+    irmovl oldY,%eax
+    mrmovl (%eax),%ecx
+    irmovl x,%eax
+    mrmovl (%eax),%edx
+    xorl %ecx,%edx
+    jne Fail
+    
+    # If tests pass put 0x1 in %eax
+    Pass:
+    irmovl p,%ebx
+    mrmovl (%ebx),%eax
+    jmp Finish
+    
+    # If tests failed put 0x0 in %eax
+    Fail:
+    irmovl f,%ebx
+    mrmovl (%ebx),%eax
+    
+    Finish:
+    # Finish Main
+    rrmovl %ebp,%esp
+    popl %ebp
+    ret
+
+# Swap subroutine
+Swap:
+    pushl %ebp				# save old base pointer on stack
+	rrmovl %esp,%ebp		# save old stack pointer in ebp
+	pushl %ebx				# callee save ebx (since it gets used)
+	mrmovl 8(%ebp),%ecx		# get xp
+	mrmovl 12(%ebp),%edx	# get yp
+	mrmovl (%ecx),%eax		# t0 = *xp
+	mrmovl (%edx),%ebx		# t1 = *yp
+	rmmovl %ebx,(%ecx)		# *xp = t1
+	rmmovl %eax,(%edx)		# *yp = t2
+	mrmovl -4(%ebp),%ebx	# restore ebx
+	rrmovl %ebp,%esp		# restore old stack pointer
+	popl %ebp				# restore old base pointer
+	ret
+
+# Stack begins at memory address 0x100    
+    .pos 0x100
+Stack:
