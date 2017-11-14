@@ -16,6 +16,7 @@ class rbNode(object):
 		self.parent = parent # defaults to None
 		self.leftChild = leftChild # defaults to None
 		self.rightChild = rightChild # defaults to None
+		self.SubTreeSize = 0
 	def __eq__(self, other):
 		if(isinstance(other, self.__class__)):
 			return self.__dict__ == other.__dict__
@@ -23,6 +24,9 @@ class rbNode(object):
 			return False
 	def __ne__(self, other):
 		return (not self.__eq__(other))
+	# increase subtree size (for rb tree)
+	def increaseSubTreeSize(self):
+		self.SubTreeSize += 1
 	# get node value
 	def getVal(self):
 		return self.value
@@ -66,9 +70,22 @@ class rbTree(object):
 			parent=None, leftChild=None, rightChild=None)
 		# empty tree is just the self.nil node
 		self.root = self.nil
+		self.treeSize = 0
 	# returns root node
 	def getRoot(self):
 		return self.root
+		
+	# GET SIZE
+	def getSize(self):
+		return self.size
+		
+	# MEDIAN
+	def median(self):
+		size = self.getSize()
+		if(size % 2):
+			
+		else:
+		return m
 	
 	# MINIMUM
 	def minimum(self,x = None):
@@ -158,12 +175,15 @@ class rbTree(object):
 			self.root = z
 		elif z.getVal() < y.getVal():
 			y.setLeftChild(z)
+			y.increaseSubTreeSize()
 		else:
 			y.setRightChild(z)
+			y.increaseSubTreeSize()
 		z.setLeftChild(self.nil)
 		z.setRightChild(self.nil)
 		z.setColor(Color.RED)
 		self.insertFixup(z)
+		self.treeSize += 1
 	# END TREE INSERT
 	
 	# RB INSERT FIXUP

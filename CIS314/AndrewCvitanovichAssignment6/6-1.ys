@@ -1,0 +1,122 @@
+init:	
+    irmovl Stack, %esp  	# Set up stack pointer  
+	irmovl Stack, %ebp  	# Set up base pointer   
+	call Main		        # Execute main program
+	halt			        # Terminate program 
+
+# Array of 10 elements
+	.align 4 	
+array:	
+    .long 0x00ff
+	.long 0x00fe
+	.long 0x00fd
+	.long 0x00fc
+	.long 0x00fb
+	.long 0x00fa
+	.long 0x00f9
+	.long 0x00f8
+	.long 0x00f7
+	.long 0x00f6
+
+# Main program
+Main:
+    pushl %ebp
+    rrmovl %esp,%ebp
+    irmovl $10,%eax
+    pushl %eax              # Push 10
+    irmovl array,%edx
+    pushl %edx              # Push array
+    call Sort               # Sort(array, 10)
+    rrmovl %ebp,%esp
+    popl %ebp
+    ret
+
+# Sort procedure
+# ebx = j
+# ecx = array
+# edx = i
+# esi = temp
+# edi = n
+# A[min] stored on stack
+Sort:
+    pushl %ebp
+    rrmovl %esp,%ebp
+    # callee save???
+    mrmovl 8(%ebp),%ecx     # ecx = array
+    mrmovl 12(%ebp),%edi    # edi = n
+    irmovl $1,%esi
+    rrmovl %esi,%edx          # i = 1
+
+# Outer Loop (i = 1 to n-1)
+LoopA:
+    # min <-- i
+    pushl %ecx              # push array + i
+    pushl %ecx              # push array + min
+    rrmovl %edx,%ebx        # j = i
+
+# Inner Loop (j = i+1 to n)
+LoopB:
+    # If A[j] < A[min] then min <-- j    
+    irmovl $1,%esi
+    addl %esi,%ebx          # j++
+    irmovl $4,%esi          # increment array + j
+    addl %esi,%ecx
+    popl %esi               # esi = (array + min)
+    pushl %esi              # push (array + min)
+    mrmovl (%esi),%esi      # esi = *(array + min)
+    pushl %ecx              # push array + j
+    mrmovl (%ecx),%ecx      # ecx = *(array + j)
+    subl %ecx,%esi          # A[min] - A[j]
+    jle Fail                # jump if A[min] <= A[j]
+    popl %esi               # esi = array + j
+    popl %ecx               # ecx = array + min
+    rrmovl %esi,%ecx        # A[m] == A[j]
+    pushl %ecx
+    pushl %ecx
+    Fail:
+    popl %ecx               # restore array + j to ecx
+    rrmovl %ebx,%esi
+    subl %edi,%esi
+    jne LoopB               # Loop while j < n
+# End Inner Loop
+
+    # save edx in esi before call
+    rrmovl %edx,%esi
+    # stack should have A[i], A[min] ready
+    # swap A[i], A[min]
+    call Swap
+    rrmovl %esi,%edx        # restore edx (i)
+    irmovl $4,%esi
+    addl %esi,%ecx          # increment A[i]
+    irmovl $1,%esi
+    addl %esi,%edx          # i++
+    addl %edx,%esi          # i + 1
+    subl %edi,%esi          # esi = i - (n-1) = i+1 - n
+    jne LoopA               # LoopA (while i < n-1)
+
+# End Sort
+End:
+    rrmovl %ebp,%esp
+    popl %ebp
+    ret
+
+# Swap procedure
+Swap:
+    pushl %ebp				# save old base pointer on stack
+	rrmovl %esp,%ebp		# save old stack pointer in ebp
+	pushl %ebx				# callee save ebx (since it gets used)
+	mrmovl 8(%ebp),%ecx	 	# get xp
+	mrmovl 12(%ebp),%edx	# get yp
+	mrmovl (%ecx),%eax		# t0 = *xp
+	mrmovl (%edx),%ebx		# t1 = *yp
+	rmmovl %ebx,(%ecx)		# *xp = t1
+	rmmovl %eax,(%edx)		# *yp = t2
+	mrmovl -4(%ebp),%ebx	# restore ebx
+	rrmovl %ebp,%esp		# restore old stack pointer
+	popl %ebp				# restore old base pointer
+	ret
+
+# Stack begins at memory address 0x200    
+    .pos 0x200
+Stack:
+    

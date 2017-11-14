@@ -1,0 +1,6 @@
+Question #2
+
+Without Forwarding: 3 Bubbles
+With Forwarding: 2 Bubbles
+
+Because the first instruction writes to %eax and the second instruction writes to %edx, several pipeline stalls are needed so that a "read after write" (RAW) error does not occur during the last instruction. By inserting 3 bubbles this RAW error can be avoided without forwarding. With forwarding only 2 bubbles are needed because the value about to be written to edx by the mrmovl instruction can be forwarded to the addl instruction.
