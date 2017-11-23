@@ -95,7 +95,6 @@ int main() {
 	printf("New function average clock time is: %f\n", cpu_time2 / NTESTS);
 	
 	if(COLLECT_TEST_DATA) {
-		printf("HELP!");
 		/* trying several array sizes */
 		int lengths[10] = {800,1600,3200,6400,12800,25600,51200,102400,204800,409600}; 
 		FILE * f = fopen(FNAME,"w");
@@ -130,6 +129,8 @@ int main() {
 				/* write line to csv file */
 				fprintf(f,"%i,%f,%f,%f\n",lengths[i],cpu_time,cpu_time2,speedup);
 			}
+			free(a);
+			free(b);
 		}
 		fclose(f);
 	}
