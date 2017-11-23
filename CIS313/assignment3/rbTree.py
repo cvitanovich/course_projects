@@ -9,14 +9,14 @@ Color = enum(RED = 0, BLACK = 1)
 # Red Black Node Class
 class rbNode(object):
 	# constructor
-	def __init__(self, value=None, color=Color.RED, 
-		parent=None, leftChild=None, rightChild=None):
+	def __init__(self, value=None, color=Color.BLACK, 
+		parent=None, leftChild=None, rightChild=None, SubTreeSize=0):
 		self.value = value # Node value (data)
 		self.color = color # defaults to RED
 		self.parent = parent # defaults to None
 		self.leftChild = leftChild # defaults to None
 		self.rightChild = rightChild # defaults to None
-		self.SubTreeSize = 0
+		self.SubTreeSize = SubTreeSize # defaults to one
 	def __eq__(self, other):
 		if(isinstance(other, self.__class__)):
 			return self.__dict__ == other.__dict__
@@ -24,9 +24,22 @@ class rbNode(object):
 			return False
 	def __ne__(self, other):
 		return (not self.__eq__(other))
-	# increase subtree size (for rb tree)
-	def increaseSubTreeSize(self):
+	# update subtree size
+	def updateSubTreeSize(self):
+		self.SubTreeSize = 1
+		if(self.getLeftChild().getVal() != None):
+			self.SubTreeSize += self.getLeftChild().getSubTreeSize()
+		if(self.getRightChild().getVal() != None):
+			self.SubTreeSize += self.getRightChild().getSubTreeSize()
+	# increment subtree size
+	def incSubTreeSize(self):
 		self.SubTreeSize += 1
+	# decrement subtree size
+	def decSubTreeSize(self):
+		self.SubTreeSize -= 1
+	# get subtree size
+	def getSubTreeSize(self):
+		return self.SubTreeSize
 	# get node value
 	def getVal(self):
 		return self.value
@@ -35,12 +48,24 @@ class rbNode(object):
 		return self.color
 	# get parent
 	def getParent(self):
+		if(self.parent == None):
+			parent = rbNode(None, Color.BLACK, 
+			parent=None, leftChild=None, rightChild=None)
+			return parent
 		return self.parent
 	# get left child
 	def getLeftChild(self):
+		if(self.leftChild == None):
+			leftChild = rbNode(None, Color.BLACK, 
+			parent=None, leftChild=None, rightChild=None)
+			return leftChild
 		return self.leftChild
 	# get right child
 	def getRightChild(self):
+		if(self.rightChild == None):
+			rightChild = rbNode(None, Color.BLACK, 
+			parent=None, leftChild=None, rightChild=None)
+			return rightChild
 		return self.rightChild
 	# set node value
 	def setVal(self, value):
@@ -52,14 +77,17 @@ class rbNode(object):
 		else:
 			print "setColor() type error!"
 	# set parent
-	def setParent(self, parent):
-		self.parent = parent
+	def setParent(self, p):
+		self.parent = p
 	# set left child
 	def setLeftChild(self, leftChild):
 		self.leftChild = leftChild
 	# set right child
 	def setRightChild(self, rightChild):
 		self.rightChild = rightChild
+	# set SubTreeSize
+	def setSubTreeSize(self, size):
+		self.SubTreeSize = size
 
 # Red Black Tree Class
 class rbTree(object):
@@ -71,22 +99,56 @@ class rbTree(object):
 		# empty tree is just the self.nil node
 		self.root = self.nil
 		self.treeSize = 0
+	
 	# returns root node
 	def getRoot(self):
 		return self.root
 		
 	# GET SIZE
 	def getSize(self):
-		return self.size
-		
+		return self.treeSize
+	
+	# SELECT [Runs in O(log n) time because it recurses through height of the tree]
+	def select(self, i, start = None):		
+		x = self.root
+		if (start != None):
+			x = start
+		r = 1
+		if(x.getLeftChild() != None):
+			r += x.getLeftChild().getSubTreeSize()
+		if (i == r):
+			return x
+		elif (i < r):
+			if(x.getLeftChild().getVal() == None):
+				print "SelectError"
+				return self.nil
+			return self.select(i, x.getLeftChild())
+		else:
+			if(x.getRightChild().getVal() == None):
+				print "SelectError2"
+				return self.nil
+			return self.select((i-r), x.getRightChild())
+	
 	# MEDIAN
 	def median(self):
 		size = self.getSize()
+		if(size <= 0):
+			return None
+		m = 0
 		if(size % 2):
-			
+			x = size/2
+			x += 1
+			m += self.select(x).getVal()
+			return float(m)
 		else:
-		return m
-	
+			x = size/2
+			y = x + 1
+			m += self.select(x).getVal()
+			m += self.select(y).getVal()
+			m = float(m)
+			m /= float(2)
+			return m
+
 	# MINIMUM
 	def minimum(self,x = None):
 		if(x == None):
@@ -140,6 +202,10 @@ class rbTree(object):
 			x.getParent().setRightChild(y)
 		y.setLeftChild(x)
 		x.setParent(y)
+		# update invalidated subtree sizes
+		y.setSubTreeSize(x.getSubTreeSize())
+		x.setSubTreeSize(x.getLeftChild().getSubTreeSize() + \
+			x.getRightChild().getSubTreeSize() + 1)
 	# END LEFT ROTATE
 	
 	# RIGHT ROTATE
@@ -150,22 +216,29 @@ class rbTree(object):
 			x.getRightChild().setParent(y)
 		x.setParent(y.getParent())
 		if y.getParent() == self.nil:
-			self.root = y
-		elif y == y.getParent().getLeftChild():
-			y.getParent.setLeftChild(x)
-		else:
+			self.root = x
+		elif y == y.getParent().getRightChild():
 			y.getParent().setRightChild(x)
-		x.setRighChild(y)
+		else:
+			y.getParent().setLeftChild(x)
+		x.setRightChild(y)
 		y.setParent(x)
+		# update invalidated subtree sizes
+		x.setSubTreeSize(y.getSubTreeSize())
+		y.setSubTreeSize(y.getLeftChild().getSubTreeSize() + \
+			y.getRightChild().getSubTreeSize() + 1)
 	# END RIGHT ROTATE
 	
 	# RB TREE INSERT
 	def insert(self, value):
+		self.treeSize += 1
 		z = rbNode(value)
+		z.setSubTreeSize(1)
 		y = self.nil
 		x = self.root
 		while(x != self.nil):
 			y = x
+			y.incSubTreeSize() # increment subtree size as we descend the tree for insert
 			if z.getVal() < x.getVal():
 				x = x.getLeftChild()
 			else:
@@ -175,21 +248,18 @@ class rbTree(object):
 			self.root = z
 		elif z.getVal() < y.getVal():
 			y.setLeftChild(z)
-			y.increaseSubTreeSize()
 		else:
 			y.setRightChild(z)
-			y.increaseSubTreeSize()
 		z.setLeftChild(self.nil)
 		z.setRightChild(self.nil)
 		z.setColor(Color.RED)
 		self.insertFixup(z)
-		self.treeSize += 1
 	# END TREE INSERT
 	
 	# RB INSERT FIXUP
 	def insertFixup(self,z):
 		while z.getParent().getColor() == Color.RED:
-			if z.getParent() == z.getParent().getParent().getLeftChild():
+			if z.getParent().getVal() == z.getParent().getParent().getLeftChild().getVal():
 				y = z.getParent().getParent().getRightChild()
 				if y.getColor() == Color.RED:
 					z.setColor(Color.BLACK)
@@ -221,44 +291,54 @@ class rbTree(object):
 	# END RB INSERT FIXUP
 	
 	# RB Tree Transplant
+	# Replaces subtree at u with subtree at v
 	def transplant(self,u,v):
-		if u.getParent() == self.nil:
+		if u.getParent().getVal() == None:
 			self.root = v
-		elif u == u.getParent().getLeftChild():
-			temp = u.getParent().getLeftChild()
-			v = temp
+		elif u.getVal() == u.getParent().getLeftChild().getVal():
+			u.getParent().setLeftChild(v)
 		else: 
-			temp = u.getParent().getRightChild()
-			v = temp
-			v.setParent(u.getParent())
+			u.getParent().setRightChild(v)
+		v.setParent(u.getParent())
 	# END RB Tree Transplant
 	
 	# RB Tree remove
 	def remove(self,z):
+		self.treeSize -= 1
 		y = z
+		# decrement subtree sizes for precursor nodes of z
+		p = z.getParent()
+		while(p.getVal() != None):
+			p.decSubTreeSize()
+			p = p.getParent()
+		
 		yOriginalColor = y.getColor()
-		if z.getLeftChild() == self.nil:
+		# there is no left subtree (z is smallest value)
+		# replace z with right subtree
+		if z.getLeftChild().getVal() == None:
 			x = z.getRightChild()
-			self.transplant(z,z.getRightChild())
-		elif z.getRightChild == self.nil:
+			self.transplant(z,x)
+		# there is no right subtree but there is a left subtree
+		# replace z with left subtree
+		elif z.getRightChild().getVal() == None:
 			x = z.getLeftChild()
 			self.transplant(z,z.getLeftChild())
+		# both subtrees exist
 		else:
 			y = self.minimum(z.getRightChild())
 			yOriginalColor = y.getColor()
 			x = y.getRightChild()
 			if y.getParent() == z:
-				temp = x.getParent()
-				y = temp
+				x.setParent(y)
 			else:
 				self.transplant(y,y.getRightChild())
 				y.setRightChild(z.getRightChild())
-				temp = y.getRightChild().getParent()
-				y = temp
+				temp = y.getRightChild()
+				temp.setParent(y)
 			self.transplant(z,y)
 			y.setLeftChild(z.getLeftChild())
-			temp = y.getLeftChild().getParent()
-			y = temp
+			temp = y.getLeftChild()
+			temp.setParent(y)
 			y.setColor(z.getColor())
 		if yOriginalColor == Color.BLACK:
 			self.removeFixup(x)
@@ -266,6 +346,8 @@ class rbTree(object):
 	
 	# RB Tree remove Fixup
 	def removeFixup(self, x):
+		if(x.getVal() == None):
+			return
 		while (x != self.root) and (x.getColor() == Color.BLACK):
 			if x == x.getParent().getLeftChild():
 				w = x.getParent().getRightChild()
@@ -322,7 +404,17 @@ def inorder_tree_walk(node):
 		return
 	if(node.getVal() != None):
 		inorder_tree_walk(node.getLeftChild())
+		if(node.getColor() == Color.BLACK):
+			col = "BLACK"
+		else:
+			col = "RED"
 		print str(node.getVal()),
+		if(False):
+			print str(node.getVal()), "{", str(node.getSubTreeSize()), \
+				",", col, ",", str(node.getParent().getVal()), \
+				",", str(node.getLeftChild().getVal()), \
+				",", str(node.getRightChild().getVal()), \
+				"}",
 		inorder_tree_walk(node.getRightChild())
 
 # Wrappers for Tree Methods:
@@ -377,3 +469,23 @@ def printMin(T):
 		print "Empty"
 	else:
 		print min.getVal()
+
+# Print Median
+def printMedian(T):
+	m = T.median()
+	if(m == None):
+		print "Empty"
+	else:
+		print '{0:g}'.format(m)
+	
+# ADD
+def add(T, k):
+	insertNode(T, k)
+	printMedian(T)
+
+# REMOVE
+def remove(T, k):
+	removeNode(T, k)
+	printMedian(T)
+
+	

@@ -1,0 +1,23 @@
+22
+start
+insert 1
+insert 8
+insert 4
+insert 3
+insert 2
+insert 5
+insert 7
+insert 11
+insert 16
+insert 23
+insert 47
+insert 21
+remove 3
+remove 1
+remove 8
+remove 2
+remove 7
+insert 10
+remove 5
+remove 47
+end
