@@ -1,0 +1,25 @@
+Andrew Cvitanovich CIS 314 Assignment 8
+
+(Question 1)
+
+(A) There are 1024 total writes. Each assignment to an int variable in a
+struct of the array corresponds with a movl instruction that writes to
+memory. Thus, the number of writes is 4*16*16 = 1024.
+
+(B) 128 of the memory writes result in cache misses. This is because
+each cache block will hold the memory contents of two of the color value
+structs. Since the cache is initially empty a miss will occur for every
+other traversal of the inner loop of the function, because two adjacent
+elements of the array are stored in the cache as a block for each miss.
+The cache will be completely full once half of the matrix has been
+processed, since only half the matrix of color values can fit in the
+cache (each struct contains 16 bytes, and each cache block holds 2
+structs, but there are only 64 cache lines so only 128 of the 256
+structs can be stored in the cache at once). Thus, once the cache has no
+more empty lines, the blocks will have to be overwritten with new data.
+This means that as the last half of the array is written to there will
+also be a miss for every other traversal of the inner loop. Since the
+inner loop is traversed 256 times, the number of cache misses will be
+128.
+
+(C) The miss rate is 12.5% based on the conclusions of parts (A) and (C).
