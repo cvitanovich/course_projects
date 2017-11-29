@@ -1,5 +1,5 @@
 # Problem 2.2 - Brackets
-
+import time
 # Node Class
 class node(object):
 	# constructor
@@ -154,13 +154,15 @@ def isWellFormed(s):
 	while(not tempStack.is_empty()):
 		s.push(tempStack.pop())
 	# recurse on remaining substring
-	return isWellFormed(tempStack)
+        return isWellFormed(tempStack)
 		
 		
 # Process Text Input
 def process(ln):
 	# remove whitespace
-	ln = ln.replace(" ","")
+	print ln
+        time.sleep(1)
+        ln = ln.replace(" ","")
 	str1 = list(ln)
 	if fileinput.isfirstline():
 		return

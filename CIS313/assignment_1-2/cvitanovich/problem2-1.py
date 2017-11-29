@@ -81,9 +81,12 @@ def stack_max(s):
 	tempStack = copy.deepcopy(s) # deep copy of stack to temp stack object
 	if tempStack.is_empty():
 		return "StackError"
+        cnt = 1
 	maxVal = tempStack.pop() # pop top element
 	while(not tempStack.is_empty()):
-		val = tempStack.pop()
+		print(type(maxVal)) 
+                cnt += 1
+                val = tempStack.pop()
 		# if we find a larger value replace maxVal with it
 		if maxVal < val:
 			maxVal = val

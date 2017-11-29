@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <limits.h>
 #define LINES 16
 #define BYTES 4
 typedef struct block block;
@@ -19,7 +20,23 @@ struct block {
 	unsigned char value[BYTES];
 };
 
-/* TODO: fix bit reversal on write to block */
+/* reverse bits in an unsigned int */
+/* adapted from Bit Twiddling Hacks by Sean Eron Anderson */
+/* https://graphics.stanford.edu/~seander/bithacks.html#BitReverseObvious */
+unsigned int bitReverse(unsigned int v) {
+	unsigned int r = v; // r will be reversed bits of v; first get LSB of v
+	int s = sizeof(v)*CHAR_BIT - 1; // extra shift needed at end
+	
+	for (v >>= 1; v; v >>= 1)
+	{
+		r <<= 1;
+		r |= v & 1;
+		s--;
+	}
+	r <<= s; // shift when v's highest bits are zero
+	return r;
+};
+
 /* write value to user specified address in cache */
 void write2Cache(block *c, int length, 
 	unsigned int addr, unsigned int val) {
@@ -43,10 +60,10 @@ void write2Cache(block *c, int length,
 	/* write to block*/
 	(c + set)->valid = 'y';
 	(c + set)->tag = tag;
-	(c + set)->value[0] = val & 0xff;
-	(c + set)->value[1] = (val >> 8) & 0xff;
-	(c + set)->value[2] = (val >> 16) & 0xff;
-	(c + set)->value[3] = (val >> 24) & 0xff;
+	(c + set)->value[0] = bitReverse(val & 0xff);
+	(c + set)->value[1] = bitReverse((val >> 8) & 0xff);
+	(c + set)->value[2] = bitReverse((val >> 16) & 0xff);
+	(c + set)->value[3] = bitReverse((val >> 24) & 0xff);
 	
 	/* print written block results*/
 	printf("wrote set: %i - tag: %i - valid: %i "
@@ -122,6 +139,7 @@ int main() {
 		
 		/* get user menu selection */
 		scanf(" %c", &status);
+		/* clear input buffer (code from StackOverflow forum) */
 		while ((junk = getchar()) != '\n' && junk != EOF) { };
 		
 		/* select operation to perform */
