@@ -40,122 +40,72 @@ void freeAdjMatrix (const int n, int ***M) {
   free(*M);
 }
 
-/* stack for topological sort */
-typedef struct {
-  int * values;
-  int top;
-  int maxSize;
-} stackT;
+/* find all paths from start to destination "dest" */
+void allPathsDFSRecursion (int **M, int n, int u, int dest, int * visited,
+  int * path, int step, int * pathLength, int * Longest, int * nLongest) {
+  visited[u] = 1;
+  path[step++] = u;
 
-void stackInit(stackT *stackPtr, int maxSize) {
-  int * v;
-  v = (int *) malloc (maxSize * sizeof(int));
-  memset(v, 0, maxSize*sizeof(v[0]));
-  stackPtr->values = v;
-  stackPtr->maxSize = maxSize;
-  stackPtr->top = -1; /* empty = -1 */
-}
-
-int stackEmpty(stackT *stackPtr) {
-  if (stackPtr->top == -1)
-    return 1;
-  else
-    return 0;
-}
-
-void stackFree(stackT *stackPtr) {
-  free(stackPtr->values);
-  stackPtr->values = NULL;
-  stackPtr->maxSize = 0;
-  stackPtr->top = -1;
-}
-
-void stackPush(stackT *stackPtr, int val) {
-  stackPtr->values[++stackPtr->top] = val;
-}
-
-int stackPop(stackT *stackPtr) {
-  return stackPtr->values[stackPtr->top--];
-}
-
-/* topological sort recursion */
-void topoSortRecursion (const int n, int v, int **M, int *visited, stackT *stack) {
-  /* mark this node visited */
-  visited[v] = 1;
-
-  for (int i = 0; i < n; ++i) {
-    if (!visited[i] && M[v][i] > 0)
-      topoSortRecursion(n,i,M,visited,stack);
-  }
-
-  /* push this node onto stack for sort */
-  stackPush(stack,v);
-}
-
-/* topoSort (depends on topoSortRecursion)*/
-void topoSort (const int n, int **M) {
-  /* stack for topoSort function */
-  stackT * stack;
-  stackInit(stack,n);
-
-  /* array of visited nodes (initialize all to zero = unvisited) */
-  int * visited = (int *) calloc (n, sizeof(int));
-
-  while(0) {
-  for (int i = 0; i < n; i++) {
-    if (visited[i] == 0)
-      topoSortRecursion(n, i, M, visited, stack);
-  }
-
-  while (!stackEmpty(stack)) {
-    printf("%d ",(int) stackPop(stack));
-  }
-  }
-
-  /* free stack */
-  stackFree(stack);
-
-  /* free visited array */
-  free(visited);
-
-
-}
-
-/* depth first search */
-/* tracks current length of path and compares with maxLength */
-/* n = number of nodes, v = start node (zero indexed) */
-void DFS (const int n, int v, \
-  int prevLength, int *maxLength, int **M, int *visited) {
-
-  /* current length initialized to zero */
-  int currentLength = 0;
-
-  visited[v] = 1; /* node v is start (mark visited) */
-  printf("%d\n",v+1);
-
-  /* find adjacent nodes */
-  for (int i = 0; i < n; ++i) {
-
-    /* recurse on unvisited adjacent nodes (positive weights) */
-    if (!visited[i] && M[v][i] > 0) {
-      /* update path length */
-      currentLength = prevLength + M[v][i];
-      printf("path length: %d\n",currentLength);
-      /* recursively call DFS on adjacent nodes */
-      DFS (n, i, currentLength, maxLength, M, visited);
+  /* reached destination */
+  /* determine length of path */
+  if (u == dest) {
+    int len = 0;
+    for (int i = 0; i < step; ++i) {
+      len += pathLength[i];
+      /* printf("%d (%d)", 1+path[i],pathLength[i]);
+       * len += pathLength[i];
+       *
+       */
     }
-
-    /* update maxLength if a longer path is found */
-    if (currentLength > (*maxLength))
-      (*maxLength) = currentLength;
-
-    /* rezero currentLength */
-    currentLength = 0;
-
+    if (len > *Longest) {
+      *nLongest = 1;
+      *Longest = len;
+    } else if (len == *Longest) {
+      (*nLongest)++;
+    }
+  } else {
+    for (int i = 0; i < n; ++i) {
+      /* recurse on unvisited adjacent nodes (positive weights) */
+      if (!visited[i] && M[u][i] > 0) {
+        pathLength[step] = M[u][i];
+        allPathsDFSRecursion(M,n,i,dest,visited,path,step,pathLength,
+        Longest, nLongest);
+      }
+    }
   }
 
-} /* end DFS */
+  /* back tracking */
+  --step;
+  visited[u] = 0;
+}
 
+void allPathsDFS (int **M, int n, int start, int dest) {
+  /* visited (init zero with calloc) */
+  int * visited = (int *) calloc (n,sizeof(int));
+  /* path array  (init zero with calloc) */
+  int * path = (int *) calloc (n,sizeof(int));
+  /* path length array (init zero with calloc) */
+  int * pathLength = (int *) calloc (n,sizeof(int));
+  int step = 0; /* step along path */
+
+  int longestPath = 0;
+  int numLongestPaths = 0;
+
+  /* call recursive subroutine allPathsRecursion */
+  allPathsDFSRecursion(M, n, start, dest, visited, path, step, pathLength, \
+    &longestPath, &numLongestPaths);
+
+  /* print results */
+  printf("longest path: %d\n", longestPath);
+  printf("number of longest paths: %d\n", numLongestPaths);
+
+  /* free visited */
+  free(visited);
+  /* free path */
+  free(path);
+  /* free pathLength */
+  free(pathLength);
+}
 
 int main(void)
 {
@@ -218,15 +168,11 @@ int main(void)
     adjMat[I-1][J-1] = W;
   }
 
-  /* topological sort */
-  topoSort(N,adjMat);
-
-  /* DFS starting at first vertex */
-  /* arguments: no. nodes, start node, prevLength, &maxLength, adjMat, visited*/
-  /* DFS(N, 0, 0, &maxLength, adjMat, visited); */
-
   /* print the adjacency matrix */
   printAdjMatrix(N,adjMat);
+  allPathsDFS (adjMat, N, 0, N-1);
+
+
 
   /* free memory */
   freeAdjMatrix(N,&adjMat);
