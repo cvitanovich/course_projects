@@ -1,3 +1,7 @@
+/* HW0 CIS 315 1/15/2018
+ * Andrew Cvitanovich
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
