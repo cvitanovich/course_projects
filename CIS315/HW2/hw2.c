@@ -171,7 +171,7 @@ int main(void)
   }
 
   /* print the adjacency matrix */
-  printAdjMatrix(N,adjMat);
+  /* printAdjMatrix(N,adjMat);*/
   allPathsDFS (adjMat, N, 0, N-1);
 
 
