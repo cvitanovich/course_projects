@@ -41,6 +41,7 @@ void freeAdjMatrix (const int n, int ***M) {
 }
 
 /* find all paths from start to destination "dest" */
+/* allPathsDFSRecursion is called by parent function allPathsDFS */
 void allPathsDFSRecursion (int **M, int n, int u, int dest, int * visited,
   int * path, int step, int * pathLength, int * Longest, int * nLongest) {
   visited[u] = 1;
@@ -79,6 +80,7 @@ void allPathsDFSRecursion (int **M, int n, int u, int dest, int * visited,
   visited[u] = 0;
 }
 
+/* find all paths of max length using DFS (modified) */
 void allPathsDFS (int **M, int n, int start, int dest) {
   /* visited (init zero with calloc) */
   int * visited = (int *) calloc (n,sizeof(int));
