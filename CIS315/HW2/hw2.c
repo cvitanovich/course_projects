@@ -50,6 +50,7 @@ typedef struct {
 void stackInit(stackT *stackPtr, int maxSize) {
   int * v;
   v = (int *) malloc (maxSize * sizeof(int));
+  memset(v, 0, maxSize*sizeof(v[0]));
   stackPtr->values = v;
   stackPtr->maxSize = maxSize;
   stackPtr->top = -1; /* empty = -1 */
