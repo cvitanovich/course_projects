@@ -49,7 +49,7 @@ typedef struct {
 
 void stackInit(stackT *stackPtr, int maxSize) {
   int * v;
-  v = (int *) calloc(maxSize, sizeof(int));
+  v = (int *) malloc (maxSize * sizeof(int));
   stackPtr->values = v;
   stackPtr->maxSize = maxSize;
   stackPtr->top = -1; /* empty = -1 */
