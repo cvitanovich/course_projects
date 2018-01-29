@@ -26,7 +26,7 @@ void initAdjMatrix (const int n, int**M) {
 void printAdjMatrix (const int n, int **M) {
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < n; ++j) {
-      printf("%5d ", M[i][j]);
+      printf("%3d ", M[i][j]);
     }
     printf("\n");
   }
