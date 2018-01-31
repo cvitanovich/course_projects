@@ -26,7 +26,7 @@ void initAdjMatrix (const int n, int**M) {
 void printAdjMatrix (const int n, int **M) {
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < n; ++j) {
-      printf("%5d ", M[i][j]);
+      printf("%3d ", M[i][j]);
     }
     printf("\n");
   }
@@ -73,6 +73,7 @@ void allPathsDFSRecursion (int **M, int n, int u, int dest, int * visited, int *
   visited[u] = 0;
 }
 
+/* find all paths of max length using DFS (modified) */
 void allPathsDFS (int **M, int n, int start, int dest) {
   
   clock_t end, begin;
@@ -179,7 +180,7 @@ int main(void)
   	}
 
   /* print the adjacency matrix */
-  /*printAdjMatrix(N,adjMat);*/
+  /* printAdjMatrix(N,adjMat);*/
   allPathsDFS (adjMat, N, 0, N-1);
 
   /* free memory */

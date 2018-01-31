@@ -1,5 +1,5 @@
 #! /bin/bash
-start=$(date '+%s')
-./a.out < inLarge1.txt
-stop=$(date '+%s')
+start=$(($(date '+%s%N')/1000000))
+./a.out < inRan.txt
+stop=$(($(date '+%s%N')/1000000))
 echo $((stop-start))
